@@ -82,6 +82,7 @@ import org.springframework.util.xml.DomUtils;
  * @see ParserContext
  * @see DefaultBeanDefinitionDocumentReader
  */
+//todo 常量
 public class BeanDefinitionParserDelegate {
 
 	public static final String BEANS_NAMESPACE_URI = "http://www.springframework.org/schema/beans";
@@ -447,42 +448,58 @@ public class BeanDefinitionParserDelegate {
 	 * if there were errors during parse. Errors are reported to the
 	 * {@link org.springframework.beans.factory.parsing.ProblemReporter}.
 	 */
+    // todo 这个方法还没有对 bean 标签进行解析，只是在解析动作之前做了一些功能架构，主要的工作有：
+	//todo <1> 处，解析 id、name 属性，确定 aliases 集合
+	//todo <2> 处，检测 beanName 是否唯一。代码如下：
 	public BeanDefinitionHolder parseBeanDefinitionElement(Element ele, BeanDefinition containingBean) {
+		//todo  <1> 解析 id 和 name 属性
 		String id = ele.getAttribute(ID_ATTRIBUTE);
 		String nameAttr = ele.getAttribute(NAME_ATTRIBUTE);
 
+		// todo  计算别名集合
 		List<String> aliases = new ArrayList<String>();
 		if (StringUtils.hasLength(nameAttr)) {
 			String[] nameArr = StringUtils.tokenizeToStringArray(nameAttr, MULTI_VALUE_ATTRIBUTE_DELIMITERS);
 			aliases.addAll(Arrays.asList(nameArr));
 		}
 
+		//todo  <2.1> beanName ，优先，使用 id
 		String beanName = id;
+		//todo   <2.2> beanName ，其次，使用 aliases 的第一个
 		if (!StringUtils.hasText(beanName) && !aliases.isEmpty()) {
-			beanName = aliases.remove(0);
+			beanName = aliases.remove(0); //todo 移除出别名集合
 			if (logger.isDebugEnabled()) {
 				logger.debug("No XML 'id' specified - using '" + beanName +
 						"' as bean name and " + aliases + " as aliases");
 			}
 		}
 
+		//todo <3> 检查 beanName 的唯一性
 		if (containingBean == null) {
 			checkNameUniqueness(beanName, aliases, ele);
 		}
 
+		//todo  <4> 解析属性，构造 AbstractBeanDefinition 对象
+		//todo <2.1> 处，如果 id 不为空，则 beanName = id 。
+		//todo <2.2> 处，如果 id 为空，但是 aliases 不空，则 beanName 为 aliases 的第一个元素
+		//todo <2.3> 处，如果两者都为空，则根据默认规则来设置 beanName 。
 		AbstractBeanDefinition beanDefinition = parseBeanDefinitionElement(ele, beanName, containingBean);
 		if (beanDefinition != null) {
+			//todo  // <2.3> beanName ，再次，使用 beanName 生成规则
 			if (!StringUtils.hasText(beanName)) {
 				try {
 					if (containingBean != null) {
+						//todo  <2.4> 生成唯一的 beanName
 						beanName = BeanDefinitionReaderUtils.generateBeanName(
 								beanDefinition, this.readerContext.getRegistry(), true);
 					}
 					else {
+						//todo  生成唯一的 beanName
 						beanName = this.readerContext.generateBeanName(beanDefinition);
 						// Register an alias for the plain bean class name, if still possible,
 						// if the generator returned the class name plus a suffix.
 						// This is expected for Spring 1.2/2.0 backwards compatibility.
+						// todo 什么东西呀！！
 						String beanClassName = beanDefinition.getBeanClassName();
 						if (beanClassName != null &&
 								beanName.startsWith(beanClassName) && beanName.length() > beanClassName.length() &&
@@ -500,6 +517,8 @@ public class BeanDefinitionParserDelegate {
 					return null;
 				}
 			}
+
+			// todo <5> 创建 BeanDefinitionHolder 对象
 			String[] aliasesArray = StringUtils.toStringArray(aliases);
 			return new BeanDefinitionHolder(beanDefinition, beanName, aliasesArray);
 		}
@@ -511,19 +530,25 @@ public class BeanDefinitionParserDelegate {
 	 * Validate that the specified bean name and aliases have not been used already
 	 * within the current level of beans element nesting.
 	 */
+	//todo 已使用 Bean 名字的集合
 	protected void checkNameUniqueness(String beanName, List<String> aliases, Element beanElement) {
 		String foundName = null;
 
+		//todo 寻找是否 beanName 已经使用
 		if (StringUtils.hasText(beanName) && this.usedNames.contains(beanName)) {
 			foundName = beanName;
 		}
 		if (foundName == null) {
+			//todo ?? 什么东西
 			foundName = (String) CollectionUtils.findFirstMatch(this.usedNames, aliases);
 		}
+
+		//todo 若已使用，使用 problemReporter 提示错误
 		if (foundName != null) {
 			error("Bean name '" + foundName + "' is already used in this <beans> element", beanElement);
 		}
 
+		//todo 添加到 usedNames 集合
 		this.usedNames.add(beanName);
 		this.usedNames.addAll(aliases);
 	}
@@ -537,32 +562,64 @@ public class BeanDefinitionParserDelegate {
 
 		this.parseState.push(new BeanEntry(beanName));
 
+		//todo  解析 class 属性
 		String className = null;
 		if (ele.hasAttribute(CLASS_ATTRIBUTE)) {
 			className = ele.getAttribute(CLASS_ATTRIBUTE).trim();
 		}
 
 		try {
+			//todo  解析 parent 属性
 			String parent = null;
 			if (ele.hasAttribute(PARENT_ATTRIBUTE)) {
 				parent = ele.getAttribute(PARENT_ATTRIBUTE);
 			}
+
+			//todo 创建用于承载属性的 AbstractBeanDefinition 实例
 			AbstractBeanDefinition bd = createBeanDefinition(className, parent);
 
+			//todo 解析默认 bean 的各种属性
+			//该方法将创建好的 GenericBeanDefinition 实例当做参数，对 bean 标签的所有属性进行解析
 			parseBeanDefinitionAttributes(ele, beanName, containingBean, bd);
+			//todo  提取 description
 			bd.setDescription(DomUtils.getChildElementValueByTagName(ele, DESCRIPTION_ELEMENT));
 
+			//todo
+		    //todo   下面的一堆是解析 <bean>......</bean> 内部的子元素，
+		    //todo  解析出来以后的信息都放到 bd 的属性中
+
+		/*	完成 bean 标签的基本属性解析后，会依次调用 BeanDefinitionParserDelegate 的 #parseMetaElements(lement ele, BeanMetadataAttributeAccessor attributeAccessor)、#parseLookupOverrideSubElements(Element beanEle, MethodOverrides overrides)、#parseReplacedMethodSubElements(Element beanEle, MethodOverrides overrides) 方法，分别对子元素 meta、lookup-method、replace-method 元素完成解析。三个子元素的作用如下：
+
+<meta> ：元数据。
+<lookup-method> ：Spring 动态改变 bean 里方法的实现。方法执行返回的对象，使用 Spring 内原有的这类对象替换，通过改变方法返回值来动态改变方法。内部实现为使用 cglib 方法，重新生成子类，重写配置的方法和返回对象，达到动态改变的效果。
+<replace-method> ：Spring 动态改变 bean 里方法的实现。需要改变的方法，使用 Spring 内原有其他类（需要继承接口org.springframework.beans.factory.support.MethodReplacer）的逻辑，替换这个方法。通过改变方法执行逻辑来动态改变方法。*/
+
+
+
+
+			//todo 解析元数据 <meta />
 			parseMetaElements(ele, bd);
+			//todo 解析 lookup-method 属性 <lookup-method />
+			//todo lookup-method ：获取器注入，是把一个方法声明为返回某种类型的
+			// bean 但实际要返回的 bean 是在配置文件里面配置的。
+			// 该方法可以用于设计一些可插拔的功能上，解除程序依赖。
 			parseLookupOverrideSubElements(ele, bd.getMethodOverrides());
+			//todo 解析 replaced-method 属性 <replaced-method />
+			// replaced-method ：可以在运行时调用新的方法替换现有的方法，还能动态的更新原有方法的逻辑。
 			parseReplacedMethodSubElements(ele, bd.getMethodOverrides());
 
+			// 解析构造函数参数 <constructor-arg />
 			parseConstructorArgElements(ele, bd);
+			// 解析 property 子元素 <property />
 			parsePropertyElements(ele, bd);
+			// 解析 qualifier 子元素 <qualifier />
 			parseQualifierElements(ele, bd);
 
 			bd.setResource(this.readerContext.getResource());
 			bd.setSource(extractSource(ele));
 
+			//todo 到这里，bean 标签的所有属性我们都可以看到其解析的过程，也就说到这里我们已经解析一个基本可用的 BeanDefinition 。
+			//todo 2020-05-07 团长看到此处
 			return bd;
 		}
 		catch (ClassNotFoundException ex) {
@@ -591,6 +648,7 @@ public class BeanDefinitionParserDelegate {
 	public AbstractBeanDefinition parseBeanDefinitionAttributes(Element ele, String beanName,
 			BeanDefinition containingBean, AbstractBeanDefinition bd) {
 
+		//todo 解析 scope 属性
 		if (ele.hasAttribute(SCOPE_ATTRIBUTE)) {
 			// Spring 2.x "scope" attribute
 			bd.setScope(ele.getAttribute(SCOPE_ATTRIBUTE));
@@ -598,6 +656,7 @@ public class BeanDefinitionParserDelegate {
 				error("Specify either 'scope' or 'singleton', not both", ele);
 			}
 		}
+
 		else if (ele.hasAttribute(SINGLETON_ATTRIBUTE)) {
 			// Spring 1.x "singleton" attribute
 			bd.setScope(TRUE_VALUE.equals(ele.getAttribute(SINGLETON_ATTRIBUTE)) ?
@@ -608,27 +667,33 @@ public class BeanDefinitionParserDelegate {
 			bd.setScope(containingBean.getScope());
 		}
 
+		//todo 解析 abstract 属性
 		if (ele.hasAttribute(ABSTRACT_ATTRIBUTE)) {
 			bd.setAbstract(TRUE_VALUE.equals(ele.getAttribute(ABSTRACT_ATTRIBUTE)));
 		}
 
+
+		//todo 解析 lazy-init 属性
 		String lazyInit = ele.getAttribute(LAZY_INIT_ATTRIBUTE);
 		if (DEFAULT_VALUE.equals(lazyInit)) {
 			lazyInit = this.defaults.getLazyInit();
 		}
 		bd.setLazyInit(TRUE_VALUE.equals(lazyInit));
 
+		//todo  解析 autowire 属性
 		String autowire = ele.getAttribute(AUTOWIRE_ATTRIBUTE);
 		bd.setAutowireMode(getAutowireMode(autowire));
 
 		String dependencyCheck = ele.getAttribute(DEPENDENCY_CHECK_ATTRIBUTE);
 		bd.setDependencyCheck(getDependencyCheck(dependencyCheck));
 
+		//todo  解析 depends-on 属性
 		if (ele.hasAttribute(DEPENDS_ON_ATTRIBUTE)) {
 			String dependsOn = ele.getAttribute(DEPENDS_ON_ATTRIBUTE);
 			bd.setDependsOn(StringUtils.tokenizeToStringArray(dependsOn, MULTI_VALUE_ATTRIBUTE_DELIMITERS));
 		}
 
+		// todo  解析 autowire-candidate 属性
 		String autowireCandidate = ele.getAttribute(AUTOWIRE_CANDIDATE_ATTRIBUTE);
 		if ("".equals(autowireCandidate) || DEFAULT_VALUE.equals(autowireCandidate)) {
 			String candidatePattern = this.defaults.getAutowireCandidates();
@@ -641,10 +706,12 @@ public class BeanDefinitionParserDelegate {
 			bd.setAutowireCandidate(TRUE_VALUE.equals(autowireCandidate));
 		}
 
+		//todo  解析 primary 标签
 		if (ele.hasAttribute(PRIMARY_ATTRIBUTE)) {
 			bd.setPrimary(TRUE_VALUE.equals(ele.getAttribute(PRIMARY_ATTRIBUTE)));
 		}
 
+		//todo  解析 init-method 属性
 		if (ele.hasAttribute(INIT_METHOD_ATTRIBUTE)) {
 			String initMethodName = ele.getAttribute(INIT_METHOD_ATTRIBUTE);
 			if (!"".equals(initMethodName)) {
@@ -658,6 +725,7 @@ public class BeanDefinitionParserDelegate {
 			}
 		}
 
+		// todo 解析 destroy-method 属性
 		if (ele.hasAttribute(DESTROY_METHOD_ATTRIBUTE)) {
 			String destroyMethodName = ele.getAttribute(DESTROY_METHOD_ATTRIBUTE);
 			if (!"".equals(destroyMethodName)) {
@@ -671,6 +739,7 @@ public class BeanDefinitionParserDelegate {
 			}
 		}
 
+		//todo  解析 factory-method 属性
 		if (ele.hasAttribute(FACTORY_METHOD_ATTRIBUTE)) {
 			bd.setFactoryMethodName(ele.getAttribute(FACTORY_METHOD_ATTRIBUTE));
 		}
@@ -691,20 +760,25 @@ public class BeanDefinitionParserDelegate {
 	protected AbstractBeanDefinition createBeanDefinition(String className, String parentName)
 			throws ClassNotFoundException {
 
+		//todo 委托 BeanDefinitionReaderUtils 创建
 		return BeanDefinitionReaderUtils.createBeanDefinition(
 				parentName, className, this.readerContext.getBeanClassLoader());
 	}
 
 	public void parseMetaElements(Element ele, BeanMetadataAttributeAccessor attributeAccessor) {
 		NodeList nl = ele.getChildNodes();
+		//todo 遍历子节点
 		for (int i = 0; i < nl.getLength(); i++) {
 			Node node = nl.item(i);
+			//todo <meta key="special-data" value="sprecial stragey" />
 			if (isCandidateElement(node) && nodeNameEquals(node, META_ELEMENT)) {
 				Element metaElement = (Element) node;
-				String key = metaElement.getAttribute(KEY_ATTRIBUTE);
-				String value = metaElement.getAttribute(VALUE_ATTRIBUTE);
+				String key = metaElement.getAttribute(KEY_ATTRIBUTE);  //获取key
+				String value = metaElement.getAttribute(VALUE_ATTRIBUTE); //获取value
+				//todo 创建 BeanMetadataAttribute 对象
 				BeanMetadataAttribute attribute = new BeanMetadataAttribute(key, value);
 				attribute.setSource(extractSource(metaElement));
+				//todo  添加到 BeanMetadataAttributeAccessor 中
 				attributeAccessor.addMetadataAttribute(attribute);
 			}
 		}
@@ -796,14 +870,18 @@ public class BeanDefinitionParserDelegate {
 	 */
 	public void parseLookupOverrideSubElements(Element beanEle, MethodOverrides overrides) {
 		NodeList nl = beanEle.getChildNodes();
+		//todo  遍历子节点
 		for (int i = 0; i < nl.getLength(); i++) {
 			Node node = nl.item(i);
 			if (isCandidateElement(node) && nodeNameEquals(node, LOOKUP_METHOD_ELEMENT)) {
 				Element ele = (Element) node;
-				String methodName = ele.getAttribute(NAME_ATTRIBUTE);
-				String beanRef = ele.getAttribute(BEAN_ELEMENT);
+				String methodName = ele.getAttribute(NAME_ATTRIBUTE); //name
+				String beanRef = ele.getAttribute(BEAN_ELEMENT); //bean
+				//todo  创建 LookupOverride 对象
 				LookupOverride override = new LookupOverride(methodName, beanRef);
 				override.setSource(extractSource(ele));
+				//todo  添加到 MethodOverrides 中
+				// 在实例化 Bean 的时候，再详细阐述具体的实现过程，这里仅仅只是一个标记作用。
 				overrides.addOverride(override);
 			}
 		}

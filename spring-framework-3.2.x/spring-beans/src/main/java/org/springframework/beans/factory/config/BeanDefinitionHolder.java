@@ -37,6 +37,7 @@ import org.springframework.util.StringUtils;
  */
 public class BeanDefinitionHolder implements BeanMetadataElement {
 
+	//todo BeanDefinitionHolder 为持有 name 和 alias 的 BeanDefinition。
 	private final BeanDefinition beanDefinition;
 
 	private final String beanName;

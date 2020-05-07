@@ -235,7 +235,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		else if (delegate.nodeNameEquals(ele, ALIAS_ELEMENT)) { //todo alias
 			processAliasRegistration(ele);
 		}
-		else if (delegate.nodeNameEquals(ele, BEAN_ELEMENT)) { //todo bean
+		else if (delegate.nodeNameEquals(ele, BEAN_ELEMENT)) { //todo bean   Spring 中最复杂也是最重要的标签
 			processBeanDefinition(ele, delegate);
 		}
 		else if (delegate.nodeNameEquals(ele, NESTED_BEANS_ELEMENT)) { //toto beans
@@ -364,11 +364,16 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	 * and registering it with the registry.
 	 */
 	protected void processBeanDefinition(Element ele, BeanDefinitionParserDelegate delegate) {
+		// todo 进行 bean 元素解析。
+		//todo  <1> 如果解析成功，则返回 BeanDefinitionHolder 对象。而 BeanDefinitionHolder 为 name 和 alias 的 BeanDefinition 对象
+		// 如果解析失败，则返回 null 。  BeanDefinitionHolder 为持有 name 和 alias 的 BeanDefinition。
 		BeanDefinitionHolder bdHolder = delegate.parseBeanDefinitionElement(ele);
 		if (bdHolder != null) {
+			//todo  <2> 进行自定义标签处理
 			bdHolder = delegate.decorateBeanDefinitionIfRequired(ele, bdHolder);
 			try {
 				// Register the final decorated instance.
+				//todo <3>   对 bdHolder 进行 BeanDefinition 的注册。
 				BeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getReaderContext().getRegistry());
 			}
 			catch (BeanDefinitionStoreException ex) {
@@ -376,6 +381,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 						bdHolder.getBeanName() + "'", ele, ex);
 			}
 			// Send registration event.
+			//todo <4> 发出响应事件，通知相关的监听器，已完成该 Bean 标签的解析。
 			getReaderContext().fireComponentRegistered(new BeanComponentDefinition(bdHolder));
 		}
 	}

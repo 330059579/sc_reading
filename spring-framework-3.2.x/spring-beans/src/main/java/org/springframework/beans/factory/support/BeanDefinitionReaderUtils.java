@@ -53,16 +53,21 @@ public class BeanDefinitionReaderUtils {
 	 * @return the bean definition
 	 * @throws ClassNotFoundException if the bean class could not be loaded
 	 */
+	//todo 该方法主要是，创建 GenericBeanDefinition 对象，并设置 parentName、className、beanClass 属性。
 	public static AbstractBeanDefinition createBeanDefinition(
 			String parentName, String className, ClassLoader classLoader) throws ClassNotFoundException {
 
+		//todo 创建 GenericBeanDefinition 对象
 		GenericBeanDefinition bd = new GenericBeanDefinition();
+		//todo  设置 parentName
 		bd.setParentName(parentName);
 		if (className != null) {
 			if (classLoader != null) {
+				//todo  设置 beanClass
 				bd.setBeanClass(ClassUtils.forName(className, classLoader));
 			}
 			else {
+				//todo 设置 beanClassName
 				bd.setBeanClassName(className);
 			}
 		}

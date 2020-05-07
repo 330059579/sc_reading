@@ -23,6 +23,8 @@ package org.springframework.core;
  * @author Rob Harrop
  * @since 2.0
  */
+//todo 实现类BeanDefinition
+//todo 定义了与其它对象的（元数据）进行连接和访问的约定，即对属性的修改，包括获取、设置、删除
 public interface AttributeAccessor {
 
 	/**
