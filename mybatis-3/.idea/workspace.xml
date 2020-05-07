@@ -31,6 +31,14 @@
       </file>
     </leaf>
   </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>150</find>
+    </findStrings>
+    <dirStrings>
+      <dir>F:\develop\sc_read\sc_reading\mybatis-3\src\test\java\org\apache\ibatis</dir>
+    </dirStrings>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
@@ -70,7 +78,7 @@
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1588843949063" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1588844138448" />
     <property name="editor.config.ad.shown" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
@@ -124,6 +132,11 @@
       <workItem from="1588843706243" duration="240000" />
     </task>
     <servers />
+  </component>
+  <component name="TestHistory">
+    <history-entry file="BaseTest_shouldGetAUser - 2020.05.07 at 17h 30m 24s.xml">
+      <configuration name="BaseTest.shouldGetAUser" configurationId="JUnit" />
+    </history-entry>
   </component>
   <component name="TimeTrackingManager">
     <option name="totallyTimeSpent" value="240000" />
