@@ -65,7 +65,8 @@ public class SimpleAliasRegistry implements AliasRegistry {
 			//todo  注册 alias
 			this.aliasMap.put(alias, name);
 		}
-		//todo 到这里 BeanDefinition 基于 beanName 和 alias 的维度，都已经注入到缓存中，下一步则是等待初始化使用了。我们
+		//todo 到这里 BeanDefinition 基于 beanName 和 alias 的维度，都已经注入到缓存中，下一步则是等待初始化使用了。
+		//todo 2020-05-11 团长看到此处
 	}
 
 	/**
