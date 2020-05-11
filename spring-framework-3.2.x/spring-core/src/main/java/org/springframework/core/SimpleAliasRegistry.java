@@ -42,22 +42,30 @@ public class SimpleAliasRegistry implements AliasRegistry {
 
 
 	public void registerAlias(String name, String alias) {
+		// 校验 name 、 alias
 		Assert.hasText(name, "'name' must not be empty");
 		Assert.hasText(alias, "'alias' must not be empty");
+		//todo  name == alias 则去掉alias
 		if (alias.equals(name)) {
 			this.aliasMap.remove(alias);
 		}
 		else {
+			//todo 如果不允许覆盖
 			if (!allowAliasOverriding()) {
 				String registeredName = this.aliasMap.get(alias);
+				//todo 则抛出 IllegalStateException 异常
 				if (registeredName != null && !registeredName.equals(name)) {
 					throw new IllegalStateException("Cannot register alias '" + alias + "' for name '" +
 							name + "': It is already registered for name '" + registeredName + "'.");
 				}
 			}
+
+			//todo    校验，是否存在循环指向
 			checkForAliasCircle(name, alias);
+			//todo  注册 alias
 			this.aliasMap.put(alias, name);
 		}
+		//todo 到这里 BeanDefinition 基于 beanName 和 alias 的维度，都已经注入到缓存中，下一步则是等待初始化使用了。我们
 	}
 
 	/**

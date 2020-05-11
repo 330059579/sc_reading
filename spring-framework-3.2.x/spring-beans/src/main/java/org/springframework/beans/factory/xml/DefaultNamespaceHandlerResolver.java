@@ -61,9 +61,13 @@ public class DefaultNamespaceHandlerResolver implements NamespaceHandlerResolver
 	private final ClassLoader classLoader;
 
 	/** Resource location to search for */
+	//todo NamespaceHandler 映射配置文件地址
 	private final String handlerMappingsLocation;
 
 	/** Stores the mappings from namespace URI to NamespaceHandler class name / instance */
+	/* todo NamespaceHandler 映射。
+		todo key：命名空间
+       todo value：分成两种情况：1）未初始化时，对应的 NamespaceHandler 的类路径；2）已初始化，对应的 NamespaceHandler 对象*/
 	private volatile Map<String, Object> handlerMappings;
 
 
@@ -110,24 +114,33 @@ public class DefaultNamespaceHandlerResolver implements NamespaceHandlerResolver
 	 * @return the located {@link NamespaceHandler}, or {@code null} if none found
 	 */
 	public NamespaceHandler resolve(String namespaceUri) {
+		//todo   <1> 获取所有已经配置的 Handler 映射
 		Map<String, Object> handlerMappings = getHandlerMappings();
+		//todo  <2> 根据 namespaceUri 获取 handler 的信息
 		Object handlerOrClassName = handlerMappings.get(namespaceUri);
+		//todo   <3.1> 不存在
 		if (handlerOrClassName == null) {
 			return null;
 		}
+
+		//todo <3.2> 已经初始化
 		else if (handlerOrClassName instanceof NamespaceHandler) {
 			return (NamespaceHandler) handlerOrClassName;
 		}
+		//todo   <3.3> 需要进行初始化
 		else {
 			String className = (String) handlerOrClassName;
 			try {
+				//todo   获得类，并创建 NamespaceHandler 对象
 				Class<?> handlerClass = ClassUtils.forName(className, this.classLoader);
 				if (!NamespaceHandler.class.isAssignableFrom(handlerClass)) {
 					throw new FatalBeanException("Class [" + className + "] for namespace [" + namespaceUri +
 							"] does not implement the [" + NamespaceHandler.class.getName() + "] interface");
 				}
 				NamespaceHandler namespaceHandler = (NamespaceHandler) BeanUtils.instantiateClass(handlerClass);
+				//todo   初始化 NamespaceHandler 对象
 				namespaceHandler.init();
+				//todo   添加到缓存
 				handlerMappings.put(namespaceUri, namespaceHandler);
 				return namespaceHandler;
 			}
@@ -146,15 +159,18 @@ public class DefaultNamespaceHandlerResolver implements NamespaceHandlerResolver
 	 * Load the specified NamespaceHandler mappings lazily.
 	 */
 	private Map<String, Object> getHandlerMappings() {
+		//todo 双重检查锁，延迟加载
 		if (this.handlerMappings == null) {
 			synchronized (this) {
 				if (this.handlerMappings == null) {
 					try {
+						//todo  读取 handlerMappingsLocation 即默认读取META-INF/spring.handlers 文件
 						Properties mappings =
 								PropertiesLoaderUtils.loadAllProperties(this.handlerMappingsLocation, this.classLoader);
 						if (logger.isDebugEnabled()) {
 							logger.debug("Loaded NamespaceHandler mappings: " + mappings);
 						}
+						//todo  将自定义的handler类初始化到 handlerMappings 中
 						Map<String, Object> handlerMappings = new ConcurrentHashMap<String, Object>(mappings.size());
 						CollectionUtils.mergePropertiesIntoMap(mappings, handlerMappings);
 						this.handlerMappings = handlerMappings;

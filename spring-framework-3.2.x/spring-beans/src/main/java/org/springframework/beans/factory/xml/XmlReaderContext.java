@@ -68,7 +68,10 @@ public class XmlReaderContext extends ReaderContext {
 		return this.reader.getBeanClassLoader();
 	}
 
+
+	//todo ，根据 namespaceUri 获取相应的 Handler 对象。这个映射关系我们在 spring.handlers 中已经定义了，所以只需要找到该类，然后初始化返回。
 	public final NamespaceHandlerResolver getNamespaceHandlerResolver() {
+		//todo 那么，NamespaceHandlerResolver 是什么时候进行初始化的呢？
 		return this.namespaceHandlerResolver;
 	}
 

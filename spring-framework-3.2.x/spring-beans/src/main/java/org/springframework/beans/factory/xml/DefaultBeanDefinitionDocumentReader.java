@@ -374,6 +374,8 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 			try {
 				// Register the final decorated instance.
 				//todo <3>   对 bdHolder 进行 BeanDefinition 的注册。
+				//todo 经过前面两个步骤的解析，这时的 BeanDefinition 已经可以满足后续的使用要求了，
+				// 那么接下来的工作就是将这些 BeanDefinition 进行注册，也就是完成第三步。
 				BeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getReaderContext().getRegistry());
 			}
 			catch (BeanDefinitionStoreException ex) {

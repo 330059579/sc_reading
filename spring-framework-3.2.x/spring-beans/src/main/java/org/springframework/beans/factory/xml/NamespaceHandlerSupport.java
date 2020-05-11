@@ -128,7 +128,11 @@ public abstract class NamespaceHandlerSupport implements NamespaceHandler {
 	 * handle the specified element. The element name is the local (non-namespace qualified)
 	 * name.
 	 */
+	//todo 注册指定元素的 BeanDefinitionParser 解析器。代码如下
+	//todo 其实就是将映射关系放在一个 Map 结构的 parsers 对象中。
 	protected final void registerBeanDefinitionParser(String elementName, BeanDefinitionParser parser) {
+		/*todo key：元素名
+		todo value：对应 BeanDefinitionParser 的解析器*/
 		this.parsers.put(elementName, parser);
 	}
 

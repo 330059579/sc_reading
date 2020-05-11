@@ -222,6 +222,7 @@ final class TestNamespaceHandler extends NamespaceHandlerSupport {
 
 	@Override
 	public void init() {
+		//todo 直接调用父类 NamespaceHandlerSupport 的 #registerBeanDefinitionParser(String elementName, BeanDefinitionParser parser) 方法，注册指定元素的 BeanDefinitionParser 解析器
 		registerBeanDefinitionParser("testBean", new TestBeanDefinitionParser());
 		registerBeanDefinitionParser("person", new PersonDefinitionParser());
 

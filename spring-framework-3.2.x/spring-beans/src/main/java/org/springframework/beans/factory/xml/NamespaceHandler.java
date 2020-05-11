@@ -52,6 +52,8 @@ public interface NamespaceHandler {
 	 * construction but before any custom elements are parsed.
 	 * @see NamespaceHandlerSupport#registerBeanDefinitionParser(String, BeanDefinitionParser)
 	 */
+	//todo NamespaceHandler接口在自定义注解时，需要定义一个Handler类来实现这个接口，和init方法，这里就是调用我们自己实现的init方法
+	//todo 以TestNamespaceHandler接口为例
 	void init();
 
 	/**

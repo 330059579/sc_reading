@@ -648,12 +648,17 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	// Implementation of BeanDefinitionRegistry interface
 	//---------------------------------------------------------------------
 
+	//todo 调用 BeanDefinitionRegistry 的 #registerBeanDefinition(String beanName, BeanDefinition beanDefinition)
+	//todo 方法，实现通过 beanName 注册 BeanDefinition 。代码如下：
 	public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition)
 			throws BeanDefinitionStoreException {
 
+		//todo  校验 beanName 与 beanDefinition 非空
 		Assert.hasText(beanName, "Bean name must not be empty");
 		Assert.notNull(beanDefinition, "BeanDefinition must not be null");
 
+		//todo   <1> 校验 BeanDefinition 。
+		// 这是注册前的最后一次校验了，主要是对属性 methodOverrides 进行校验。
 		if (beanDefinition instanceof AbstractBeanDefinition) {
 			try {
 				((AbstractBeanDefinition) beanDefinition).validate();
@@ -667,8 +672,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		BeanDefinition oldBeanDefinition;
 
 		synchronized (this.beanDefinitionMap) {
+			//todo   <2> 从缓存中获取指定 beanName 的 BeanDefinition
 			oldBeanDefinition = this.beanDefinitionMap.get(beanName);
+			//todo  <3> 如果已经存在
 			if (oldBeanDefinition != null) {
+				//todo  如果存在但是不允许覆盖，抛出异常
 				if (!this.allowBeanDefinitionOverriding) {
 					throw new BeanDefinitionStoreException(beanDefinition.getResourceDescription(), beanName,
 							"Cannot register bean definition [" + beanDefinition + "] for bean '" + beanName +
@@ -681,13 +689,17 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 					}
 				}
 			}
+			//todo  <4> 如果未存在
 			else {
+				//todo 添加 beanName 到 beanDefinitionNames 中
 				this.beanDefinitionNames.add(beanName);
 				this.frozenBeanDefinitionNames = null;
 			}
+			//todo  添加到 BeanDefinition 到 beanDefinitionMap 中。
 			this.beanDefinitionMap.put(beanName, beanDefinition);
 		}
 
+		// todo 重新设置 beanName 对应的缓存
 		if (oldBeanDefinition != null || containsSingleton(beanName)) {
 			resetBeanDefinition(beanName);
 		}

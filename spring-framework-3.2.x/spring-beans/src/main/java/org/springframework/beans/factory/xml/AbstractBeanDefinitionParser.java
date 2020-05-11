@@ -55,23 +55,32 @@ public abstract class AbstractBeanDefinitionParser implements BeanDefinitionPars
 	/** Constant for the name attribute */
 	public static final String NAME_ATTRIBUTE = "name";
 
+/*	。从前面默认标签的解析过程来看，我们就可以判断该方法就是将标签解析为 AbstractBeanDefinition ，且后续代码都是将 AbstractBeanDefinition 转换为 BeanDefinitionHolder 对象。所以真正的解析工作都交由 #parseInternal(Element element, ParserContext parserContext) 方法来实现。*/
 	public final BeanDefinition parse(Element element, ParserContext parserContext) {
+		//todo <1> 内部解析，返回 AbstractBeanDefinition 对象
 		AbstractBeanDefinition definition = parseInternal(element, parserContext);
 		if (definition != null && !parserContext.isNested()) {
 			try {
+				//todo  解析 id 属性
 				String id = resolveId(element, definition, parserContext);
 				if (!StringUtils.hasText(id)) {
 					parserContext.getReaderContext().error(
 							"Id is required for element '" + parserContext.getDelegate().getLocalName(element)
 									+ "' when used as a top-level tag", element);
 				}
+
+				//todo 解析 aliases 属性
 				String[] aliases = new String[0];
 				String name = element.getAttribute(NAME_ATTRIBUTE);
 				if (StringUtils.hasLength(name)) {
 					aliases = StringUtils.trimArrayElements(StringUtils.commaDelimitedListToStringArray(name));
 				}
+
+				//todo 创建 BeanDefinitionHolder 对象
 				BeanDefinitionHolder holder = new BeanDefinitionHolder(definition, id, aliases);
+				//todo 注册 BeanDefinition
 				registerBeanDefinition(holder, parserContext.getRegistry());
+				//todo 触发事件
 				if (shouldFireEvents()) {
 					BeanComponentDefinition componentDefinition = new BeanComponentDefinition(holder);
 					postProcessComponentDefinition(componentDefinition);

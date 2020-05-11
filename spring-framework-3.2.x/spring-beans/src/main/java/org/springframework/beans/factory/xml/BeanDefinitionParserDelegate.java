@@ -1501,12 +1501,15 @@ public class BeanDefinitionParserDelegate {
 	}
 
 	public BeanDefinition parseCustomElement(Element ele, BeanDefinition containingBd) {
+		//todo  获取 namespaceUri
 		String namespaceUri = getNamespaceURI(ele);
+		//todo  根据 namespaceUri 获取相应的 Handler  a1
 		NamespaceHandler handler = this.readerContext.getNamespaceHandlerResolver().resolve(namespaceUri);
 		if (handler == null) {
 			error("Unable to locate Spring NamespaceHandler for XML schema namespace [" + namespaceUri + "]", ele);
 			return null;
 		}
+		//todo  // 调用之前自己编写的TestBeanDefinitionParser的parse方法
 		return handler.parse(ele, new ParserContext(this.readerContext, this, containingBd));
 	}
 

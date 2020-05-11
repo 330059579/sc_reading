@@ -144,11 +144,13 @@ public class BeanDefinitionReaderUtils {
 	 * @param registry the bean factory to register with
 	 * @throws BeanDefinitionStoreException if registration failed
 	 */
+	//todo bean注册流程，非常重要
 	public static void registerBeanDefinition(
 			BeanDefinitionHolder definitionHolder, BeanDefinitionRegistry registry)
 			throws BeanDefinitionStoreException {
 
-		// Register bean definition under primary name.
+		//todo 首先，通过 beanName 注册 BeanDefinition 。
+		// 然后，再通过注册别名 alias 和 beanName 的
 		String beanName = definitionHolder.getBeanName();
 		registry.registerBeanDefinition(beanName, definitionHolder.getBeanDefinition());
 

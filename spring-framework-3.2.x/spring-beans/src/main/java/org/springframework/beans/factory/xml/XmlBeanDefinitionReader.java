@@ -544,9 +544,11 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * Create the {@link XmlReaderContext} to pass over to the document reader.
 	 */
 	protected XmlReaderContext createReaderContext(Resource resource) {
+	    //todo a1 NamespaceHandlerResolver在此初始化
 		if (this.namespaceHandlerResolver == null) {
 			this.namespaceHandlerResolver = createDefaultNamespaceHandlerResolver();
 		}
+		//todo 传到XmlReaderContext中
 		return new XmlReaderContext(resource, this.problemReporter, this.eventListener,
 				this.sourceExtractor, this, this.namespaceHandlerResolver);
 	}
